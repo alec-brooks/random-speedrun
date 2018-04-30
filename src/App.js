@@ -46,21 +46,21 @@ class App extends Component {
       video: '',
       category: '',
     };
-    this.getNumberOfGames = this.getNumberOfGames.bind(this);
-    this.getRandomWR = this.getRandomWR.bind(this);
+    this.accurateNumberOfGames = this.accurateNumberOfGames.bind(this);
+    this.randomWR = this.randomWR.bind(this);
   }
   componentWillMount() {
-    this.getNumberOfGames();
+    this.accurateNumberOfGames();
   }
 
-  async getNumberOfGames() {
+  async accurateNumberOfGames() {
     this.setState({
       numberOfGames:
         this.state.numberOfGames + await fetchAdditionalGameCount(this.state.numberOfGames),
     });
   }
 
-  async getRandomWR() {
+  async randomWR() {
     const randomGameNumber = getRandomIntWithMax(this.state.numberOfGames);
     const { id, names: { international } } = await fetchGameByNumber(randomGameNumber);
     const records = await fetchRecordsForGame(id);
@@ -78,7 +78,7 @@ class App extends Component {
       <div >
         {this.state.name && this.state.category && <p>{this.state.name} - {this.state.category}</p>}
         <p>{this.state.video}</p>
-        <button onClick={this.getRandomWR}>
+        <button onClick={this.randomWR}>
           Get Random WR
         </button>
       </div>

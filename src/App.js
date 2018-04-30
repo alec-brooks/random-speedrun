@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import { chain } from 'lodash';
+import Title from './components/Title';
+import EmbeddedVideo from './components/EmbeddedVideo';
 
 const getRandomIntWithMax = maxInt => Math.floor(Math.random() * maxInt);
 
@@ -76,8 +78,8 @@ class App extends Component {
   render() {
     return (
       <div >
-        {this.state.name && this.state.category && <p>{this.state.name} - {this.state.category}</p>}
-        <p>{this.state.video}</p>
+        <Title gameName={this.state.name} category={this.state.category} />
+        {this.state.video && <EmbeddedVideo videoUrl={this.state.video} />}
         <button onClick={this.randomWR}>
           Get Random WR
         </button>

@@ -10,23 +10,20 @@ it('renders without crashing', () => {
 describe('getRunsWithVideos', () => {
   const sampleData = [{
     runs: [{
-      place: 1,
       run: {
-        id: '0y6vp7qm',
+        category: 'any%',
         videos: { links: [{ uri: 'https://www.twitch.tv/raptordaraptor/v/82702585' }] },
       },
     }],
   }, {
     runs: [{
-      place: 1,
       run: {
-        id: '1zxwr48m',
+        category: '100%',
         videos: { links: [{ uri: 'https://www.twitch.tv/raptordaraptor/v/81625668' }] },
       },
     }],
   }, {
     runs: [{
-      place: 1,
       run: {
         id: '0znor47y',
         videos: null,
@@ -37,8 +34,8 @@ describe('getRunsWithVideos', () => {
   }];
   it('should get runs with records', () => {
     expect(getRunsWithVideos(sampleData)).toEqual([
-      'https://www.twitch.tv/raptordaraptor/v/82702585',
-      'https://www.twitch.tv/raptordaraptor/v/81625668',
+      { categoryId: 'any%', video: 'https://www.twitch.tv/raptordaraptor/v/82702585' },
+      { categoryId: '100%', video: 'https://www.twitch.tv/raptordaraptor/v/81625668' },
     ]);
   });
 });

@@ -21,12 +21,20 @@ const fetchRecordsForGame = async (gameId) => {
   return json.data;
 };
 
+const fetchCategoryNameById = async (categoryId) => {
+  const response = await fetch(`https://www.speedrun.com/api/v1/categories/${categoryId}`);
+  const json = await response.json();
+  return json.data.name;
+};
+
 export const getRunsWithVideos = records =>
   chain(records)
     .map(({ runs }) => runs)
-    .flatMap(runs => runs.map(({ run: { videos } }) => videos))
-    .filter(videos => videos)
-    .map(({ links }) => links[0].uri)
+    .flatMap(runs =>
+      runs.map(({ run: { videos, category } }) =>
+        ({ videos, category })))
+    .filter(({ videos }) => videos)
+    .map(({ videos: { links }, category }) => ({ video: links[0].uri, categoryId: category }))
     .value();
 
 class App extends Component {
@@ -36,6 +44,7 @@ class App extends Component {
       numberOfGames: 12000,
       name: '',
       video: '',
+      category: '',
     };
     this.getNumberOfGames = this.getNumberOfGames.bind(this);
     this.getRandomWR = this.getRandomWR.bind(this);
@@ -51,11 +60,12 @@ class App extends Component {
     const { id, names: { international } } = await fetchGameByNumber(randomGameNumber);
     const records = await fetchRecordsForGame(id);
     const runsWithVideos = getRunsWithVideos(records);
-    const randomVideo = runsWithVideos[getRandomIntWithMax(runsWithVideos.length)];
-
+    const { video, categoryId } = runsWithVideos[getRandomIntWithMax(runsWithVideos.length)];
+    const category = await fetchCategoryNameById(categoryId);
     this.setState({
       name: international,
-      video: randomVideo,
+      video,
+      category,
     });
   }
   render() {
@@ -65,7 +75,7 @@ class App extends Component {
         <button onClick={this.getNumberOfGames}>
           Get number of Games
         </button>
-        <p>{this.state.name}</p>
+        <p>{this.state.name} - {this.state.category}</p>
         <button onClick={this.getRandomWR}>
           Get Random WR
         </button>

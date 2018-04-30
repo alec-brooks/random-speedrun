@@ -1,4 +1,7 @@
 import React, { Component } from 'react';
+import { chain } from 'lodash';
+
+const getRandomIntWithMax = maxInt => Math.floor(Math.random() * maxInt);
 
 const fetchAdditionalGameCount = async (currentAmountOfGames) => {
   const response = await fetch(`https://www.speedrun.com/api/v1/games?_bulk=yes&max=1000&offset=${currentAmountOfGames}`);
@@ -6,18 +9,25 @@ const fetchAdditionalGameCount = async (currentAmountOfGames) => {
   return json.pagination.size;
 };
 
-const fetchRandomGame = async (numberOfGames) => {
-  const randomGameIndex = Math.floor(Math.random() * numberOfGames);
-  const response = await fetch(`https://www.speedrun.com/api/v1/games?offset=${randomGameIndex}`);
+const fetchGameByNumber = async (gameNumber) => {
+  const response = await fetch(`https://www.speedrun.com/api/v1/games?offset=${gameNumber}`);
   const json = await response.json();
   return json.data[0];
 };
 
-const fetchRandomRecordsForGame = async (gameId) => {
-  const response = fetch(`https://www.speedrun.com/api/v1/games/${gameId}/records?top=1`);
+const fetchRecordsForGame = async (gameId) => {
+  const response = await fetch(`https://www.speedrun.com/api/v1/games/${gameId}/records?top=1`);
   const json = await response.json();
-  return json;
+  return json.data;
 };
+
+export const getRunsWithVideos = records =>
+  chain(records)
+    .map(({ runs }) => runs)
+    .flatMap(runs => runs.map(({ run: { videos } }) => videos))
+    .filter(videos => videos)
+    .map(({ links }) => links[0].uri)
+    .value();
 
 class App extends Component {
   constructor() {
@@ -25,7 +35,7 @@ class App extends Component {
     this.state = {
       numberOfGames: 12000,
       name: '',
-      records: [],
+      video: '',
     };
     this.getNumberOfGames = this.getNumberOfGames.bind(this);
     this.getRandomWR = this.getRandomWR.bind(this);
@@ -37,15 +47,18 @@ class App extends Component {
     });
   }
   async getRandomWR() {
-    const { id, names: { international } } = await fetchRandomGame(this.state.numberOfGames);
-    const records = await fetchRandomRecordsForGame(id);
+    const randomGameNumber = getRandomIntWithMax(this.state.numberOfGames);
+    const { id, names: { international } } = await fetchGameByNumber(randomGameNumber);
+    const records = await fetchRecordsForGame(id);
+    const runsWithVideos = getRunsWithVideos(records);
+    const randomVideo = runsWithVideos[getRandomIntWithMax(runsWithVideos.length)];
+
     this.setState({
-      records,
       name: international,
+      video: randomVideo,
     });
   }
   render() {
-    console.log(this.state.records);
     return (
       <div >
         <p>{this.state.numberOfGames}</p>
@@ -56,6 +69,7 @@ class App extends Component {
         <button onClick={this.getRandomWR}>
           Get Random WR
         </button>
+        <p>{this.state.video}</p>
       </div>
     );
   }

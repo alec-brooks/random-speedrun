@@ -45,11 +45,14 @@ const findGameWithVideos = async ([game, ...games]) => {
   const { id, names: { international } } = game;
   const records = await fetchRecordsForGame(id);
   const runsWithVideos = getRunsWithVideos(records);
-  const randomGamesIndex = getRandomIntWithMax(runsWithVideos.length);
-  const { video, categoryId } = runsWithVideos[randomGamesIndex];
-  return video.length ? {
-    video, categoryId, name: international,
-  } : findGameWithVideos(games);
+  if (runsWithVideos.length) {
+    const randomGamesIndex = getRandomIntWithMax(runsWithVideos.length);
+    const { video, categoryId } = runsWithVideos[randomGamesIndex];
+    return video.length ? {
+      video, categoryId, name: international,
+    } : findGameWithVideos(games);
+  }
+  return findGameWithVideos(games);
 };
 
 class App extends Component {

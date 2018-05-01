@@ -5,15 +5,19 @@ import Twitch from 'react-twitch-embed-video';
 import videoUrlParser from 'js-video-url-parser';
 
 const EmbeddedVideo = ({ videoUrl }) => {
-  const { provider, id } = videoUrlParser.parse(videoUrl);
-  switch (provider) {
-    case 'youtube':
-      return <Youtube videoId={id} />;
-    case 'twitch':
-      return <Twitch video={id} />;
-    default:
-      return videoUrl;
+  const parsedUrl = videoUrlParser.parse(videoUrl);
+  const { provider, id, mediaType } = parsedUrl;
+  if (mediaType === 'video') {
+    switch (provider) {
+      case 'youtube':
+        return <Youtube videoId={id} />;
+      case 'twitch':
+        return <Twitch video={id} />;
+      default:
+        return <a href={videoUrl}>{videoUrl}</a>;
+    }
   }
+  return <a href={videoUrl}>{videoUrl}</a>;
 };
 EmbeddedVideo.propTypes = {
   videoUrl: PropTypes.string.isRequired,

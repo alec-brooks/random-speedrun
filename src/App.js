@@ -2,32 +2,14 @@ import React, { Component } from 'react';
 import { chain } from 'lodash';
 import Title from './components/Title';
 import EmbeddedVideo from './components/EmbeddedVideo';
+import {
+  fetchRecordsForGame,
+  fetchAdditionalGameCount,
+  fetchGamesAtIndex,
+  fetchCategoryNameById,
+} from './network';
 
 const getRandomIntWithMax = maxInt => Math.floor(Math.random() * maxInt);
-
-const fetchAdditionalGameCount = async (currentAmountOfGames) => {
-  const response = await fetch(`https://www.speedrun.com/api/v1/games?_bulk=yes&max=1000&offset=${currentAmountOfGames}`);
-  const json = await response.json();
-  return json.pagination.size;
-};
-
-const fetchGamesAtIndex = async (gameNumber) => {
-  const response = await fetch(`https://www.speedrun.com/api/v1/games?offset=${gameNumber}`);
-  const json = await response.json();
-  return json.data;
-};
-
-const fetchRecordsForGame = async (gameId) => {
-  const response = await fetch(`https://www.speedrun.com/api/v1/games/${gameId}/records?top=1`);
-  const json = await response.json();
-  return json.data;
-};
-
-const fetchCategoryNameById = async (categoryId) => {
-  const response = await fetch(`https://www.speedrun.com/api/v1/categories/${categoryId}`);
-  const json = await response.json();
-  return json.data.name;
-};
 
 export const getRunsWithVideos = records =>
   chain(records)
@@ -40,7 +22,6 @@ export const getRunsWithVideos = records =>
     .map(({ videos: { links }, category, time }) =>
       ({ video: links[0].uri, categoryId: category, time }))
     .value();
-
 
 const findGameWithVideos = async ([game, ...games]) => {
   const { id, names: { international } } = game;

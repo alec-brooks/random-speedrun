@@ -6,13 +6,13 @@ import videoUrlParser from 'js-video-url-parser';
 
 const EmbeddedVideo = ({ videoUrl }) => {
   const parsedUrl = videoUrlParser.parse(videoUrl);
-  const { provider, id, mediaType } = parsedUrl;
-  if (mediaType === 'video') {
-    switch (provider) {
+
+  if (parsedUrl && parsedUrl.mediaType === 'video') {
+    switch (parsedUrl.provider) {
       case 'youtube':
-        return <Youtube videoId={id} />;
+        return <Youtube videoId={parsedUrl.id} />;
       case 'twitch':
-        return <Twitch video={id} />;
+        return <Twitch video={parsedUrl.id} />;
       default:
         return <a href={videoUrl}>{videoUrl}</a>;
     }

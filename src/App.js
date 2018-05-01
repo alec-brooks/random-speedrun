@@ -11,10 +11,10 @@ const fetchAdditionalGameCount = async (currentAmountOfGames) => {
   return json.pagination.size;
 };
 
-const fetchGameByNumber = async (gameNumber) => {
+const fetchGamesAtIndex = async (gameNumber) => {
   const response = await fetch(`https://www.speedrun.com/api/v1/games?offset=${gameNumber}`);
   const json = await response.json();
-  return json.data[0];
+  return json.data;
 };
 
 const fetchRecordsForGame = async (gameId) => {
@@ -36,8 +36,21 @@ export const getRunsWithVideos = records =>
       runs.map(({ run: { videos, category } }) =>
         ({ videos, category })))
     .filter(({ videos }) => videos)
+    .filter(({ videos: links }) => links)
     .map(({ videos: { links }, category }) => ({ video: links[0].uri, categoryId: category }))
     .value();
+
+
+const findGameWithVideos = async ([game, ...games]) => {
+  const { id, names: { international } } = game;
+  const records = await fetchRecordsForGame(id);
+  const runsWithVideos = getRunsWithVideos(records);
+  const randomGamesIndex = getRandomIntWithMax(runsWithVideos.length);
+  const { video, categoryId } = runsWithVideos[randomGamesIndex];
+  return video.length ? {
+    video, categoryId, name: international,
+  } : findGameWithVideos(games);
+};
 
 class App extends Component {
   constructor() {
@@ -63,14 +76,16 @@ class App extends Component {
   }
 
   async randomWR() {
-    const randomGameNumber = getRandomIntWithMax(this.state.numberOfGames);
-    const { id, names: { international } } = await fetchGameByNumber(randomGameNumber);
-    const records = await fetchRecordsForGame(id);
-    const runsWithVideos = getRunsWithVideos(records);
-    const { video, categoryId } = runsWithVideos[getRandomIntWithMax(runsWithVideos.length)];
+    const gamesInFetch = 20;
+    const randomGameNumber = getRandomIntWithMax(this.state.numberOfGames - gamesInFetch);
+    const games = await fetchGamesAtIndex(randomGameNumber);
+    const {
+      name, video, categoryId,
+    } = await findGameWithVideos(games);
+
     const category = await fetchCategoryNameById(categoryId);
     this.setState({
-      name: international,
+      name,
       video,
       category,
     });

@@ -33,11 +33,12 @@ export const getRunsWithVideos = records =>
   chain(records)
     .map(({ runs }) => runs)
     .flatMap(runs =>
-      runs.map(({ run: { videos, category } }) =>
-        ({ videos, category })))
+      runs.map(({ run: { videos, category, times } }) =>
+        ({ videos, category, time: times && times.primary_t })))
     .filter(({ videos }) => videos)
     .filter(({ videos: links }) => links)
-    .map(({ videos: { links }, category }) => ({ video: links[0].uri, categoryId: category }))
+    .map(({ videos: { links }, category, time }) =>
+      ({ video: links[0].uri, categoryId: category, time }))
     .value();
 
 
@@ -47,9 +48,9 @@ const findGameWithVideos = async ([game, ...games]) => {
   const runsWithVideos = getRunsWithVideos(records);
   if (runsWithVideos.length) {
     const randomGamesIndex = getRandomIntWithMax(runsWithVideos.length);
-    const { video, categoryId } = runsWithVideos[randomGamesIndex];
+    const { video, categoryId, time } = runsWithVideos[randomGamesIndex];
     return video.length ? {
-      video, categoryId, name: international,
+      video, categoryId, name: international, time,
     } : findGameWithVideos(games);
   }
   return findGameWithVideos(games);
@@ -63,6 +64,7 @@ class App extends Component {
       name: '',
       video: '',
       category: '',
+      time: 0,
     };
     this.accurateNumberOfGames = this.accurateNumberOfGames.bind(this);
     this.randomWR = this.randomWR.bind(this);
@@ -83,7 +85,7 @@ class App extends Component {
     const randomGameNumber = getRandomIntWithMax(this.state.numberOfGames - gamesInFetch);
     const games = await fetchGamesAtIndex(randomGameNumber);
     const {
-      name, video, categoryId,
+      name, video, categoryId, time,
     } = await findGameWithVideos(games);
 
     const category = await fetchCategoryNameById(categoryId);
@@ -91,13 +93,14 @@ class App extends Component {
       name,
       video,
       category,
+      time,
     });
   }
   render() {
     return (
       <div >
         <div>
-          <Title gameName={this.state.name} category={this.state.category} />
+          <Title gameName={this.state.name} category={this.state.category} time={this.state.time} />
           {this.state.video && <EmbeddedVideo videoUrl={this.state.video} />}
         </div>
         <button onClick={this.randomWR}>

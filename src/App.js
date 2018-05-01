@@ -96,12 +96,14 @@ class App extends Component {
   render() {
     return (
       <div >
-        <Title gameName={this.state.name} category={this.state.category} />
-        {this.state.video && <EmbeddedVideo videoUrl={this.state.video} />}
+        <div>
+          <Title gameName={this.state.name} category={this.state.category} />
+          {this.state.video && <EmbeddedVideo videoUrl={this.state.video} />}
+        </div>
         <button onClick={this.randomWR}>
           Get Random WR
         </button>
-      </div>
+      </div >
     );
   }
 }
